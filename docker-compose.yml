@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+
+  traefik:
+    image: traefik:v2.10
+    container_name: apex_traefik
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:5055:80"  
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/config:/etc/traefik/config:ro
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: apex_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_apex_activity
+      MYSQL_USER: user_apex_activity
+      MYSQL_PASSWORD: ApexActivity123*
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    labels:
+      - "traefik.enable=false"
+
+  adminer:
+    image: adminer:latest
+    container_name: apex_adminer
+    restart: always
+    ports:
+      - "5056:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=mysql
+      - ADMINER_DESIGN=flat
+    networks:
+      - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=PathPrefix(`/adminer`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.adminer.entrypoints=web"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: apex_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=mysql+pymysql://user_apex_activity:ApexActivity123*@mysql:3306/db_apex_activity
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.sticky=true"
+      - "traefik.http.middlewares.api-strip.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.api-strip.stripprefix.forceSlash=false"
+      - "traefik.http.routers.api.middlewares=api-strip@docker"
+      - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Forwarded-Prefix=/api"
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

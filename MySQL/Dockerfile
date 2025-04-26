@@ -1,0 +1,8 @@
+FROM mysql:8.0.22  
+
+ENV MYSQL_ROOT_PASSWORD ApexActivity123
+ENV MYSQL_DATABASE db_apex_activity
+ENV MYSQL_USER user_apex_activity
+ENV MYSQL_PASSWORD ApexActivity123*
+
+EXPOSE 3306
