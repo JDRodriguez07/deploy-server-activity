@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
 
-  apex_traefik:
+  traefik:
     image: traefik:v2.10
     container_name: apex_traefik
     restart: unless-stopped
@@ -17,7 +17,7 @@ services:
     networks:
       - app-network
 
-  apex_mysql:
+  mysql:
     image: mysql:8.0
     container_name: apex_mysql
     restart: unless-stopped
@@ -33,7 +33,7 @@ services:
     labels:
       - "traefik.enable=false"
 
-  apex_adminer:
+  adminer:
     image: adminer:latest
     container_name: apex_adminer
     restart: always
