@@ -36,9 +36,6 @@ services:
   apex_adminer:
     image: adminer:latest
     container_name: apex_adminer
-    restart: always
-    ports:
-      - "5056:8080"
     environment:
       - ADMINER_DEFAULT_SERVER=mysql
       - ADMINER_DESIGN=flat
@@ -50,15 +47,22 @@ services:
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
       - "traefik.http.routers.adminer.entrypoints=web"
 
-  backend:
+  apex_backend:
     build:
       context: ./backend
-    container_name: apex_backend
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
     restart: unless-stopped
     environment:
       - DATABASE_URL=mysql+pymysql://user_apex_activity:ApexActivity123*@mysql:3306/db_apex_activity
-    ports:
-      - "8000:8000"
     depends_on:
       - mysql
     networks:
