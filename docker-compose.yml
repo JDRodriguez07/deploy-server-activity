@@ -16,7 +16,7 @@ services:
     networks:
       - app-network
 
-  apex_mysql:
+  mysql:
     image: mysql:8.0
     container_name: apex_mysql
     restart: unless-stopped
