@@ -9,7 +9,17 @@ from app.database.database import engine, Base
 # from routers.legend_type_router import router as legend_type_router
 
 # Create a FastAPI app instance
-app = FastAPI()
+app = FastAPI(
+    title="FastAPI Example",
+    root_path="/api",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    swagger_ui_parameters={
+        "defaultModelsExpandDepth": -1,
+        "persistAuthorization": True,
+    },
+)
 
 # Create the database tables automatically at startup
 Base.metadata.create_all(bind=engine)
