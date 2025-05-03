@@ -33,6 +33,7 @@ services:
     labels:
       - "traefik.enable=false"
 
+
   adminer:
     image: adminer:latest
     container_name: apex_adminer
